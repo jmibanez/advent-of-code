@@ -1,5 +1,6 @@
 (require '[clojure.string :as str])
 (require '[clojure.zip :as z])
+(require '[util :as u])
 
 (defrecord Game [i gameSets])
 
@@ -34,8 +35,8 @@
 (defn power-of-game [game]
   (reduce * 1 (fewest-cubes game)))
 
-(let [input (str/trim (slurp "2.txt"))
-      lines (str/split input #"\n")
-      games (map read-game lines)]
+(let [games (->> "2.txt"
+                 u/read-file-as-lines
+                 (map read-game))]
   ;; 67335
   (reduce + (map power-of-game games)))

@@ -1,6 +1,7 @@
 (require '[clojure.string :as str])
 (require '[clojure.walk :as w])
 (require '[clojure.zip :as z])
+(require '[util :as u])
 
 (defn engine-part? [cell]
   (and (not (= \. cell))
@@ -56,10 +57,7 @@
             neighbors)))
 
 (defn read-grid [input-name]
-  (let [lines (-> input-name
-                  slurp
-                  str/trim
-                  (str/split #"\n"))]
+  (let [lines (u/read-file-as-lines input-name)]
     (->> lines
          (map seq)
          to-array-2d)))
@@ -85,7 +83,7 @@
              (->> neighbors
                   (map :chunk)
                   (reduce *))
-             'nil)))
+             nil)))
        (filter some?)
        flatten
        (reduce +)))
