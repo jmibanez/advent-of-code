@@ -44,10 +44,27 @@
                              (rest report-deltas))]
     (reduce #(and %1 %2) true is-safe-deltas?)))
 
-(defn get-safe-reports [input]
-  (->> input
-       get-reports
-       (filter is-report-safe?)))
+(defn get-safe-reports [reports]
+  (filter is-report-safe? reports))
+
+
+(defn drop-nth [n coll]
+   (keep-indexed #(if (not= %1 n) %2) coll))
+
+(defn can-tolerate? [report]
+  (reduce #(or %1 %2)
+          (for [i (range (count report))]
+            (is-report-safe? (drop-nth i report)))))
+
+(defn get-tolerable-reports [reports]
+  (let [unsafe-reports (filter #(not (is-report-safe? %)) reports)]
+    (filter can-tolerate? unsafe-reports)))
+
 
 (defn count-safe-reports [input]
-  (count (get-safe-reports input)))
+  (let [reports (get-reports input)
+        sure-safe-reports (get-safe-reports reports)
+        tolerable-reports (get-tolerable-reports reports)]
+    (+
+     (count sure-safe-reports)
+     (count tolerable-reports))))
