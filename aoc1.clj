@@ -25,5 +25,28 @@
 
 (get-distance-of-lists "aoc1-example.txt")
 
-(def ans (get-distance-of-lists "aoc1-input.txt"))
+
+(defn element-occurence-count [l]
+  (let [nilable-inc #(if (nil? %)
+                       1 (inc %))]
+    (reduce #(update %1 %2 nilable-inc)
+            {} l)))
+
+(defn get-list-simlarity [input]
+  (let [lines (u/read-file-as-lines input)
+        tuple-lists (map #(->> %
+                               (map to-int))
+                         (apply map vector
+                                (for [l lines]
+                                  (str/split l #" +"))))
+        left-list (first tuple-lists)
+        occurence-count (-> tuple-lists
+                            last
+                            element-occurence-count)]
+    (reduce #(+ %1 (* %2 (get occurence-count %2 0)))
+            0 left-list)))
+
+
+;; (def ans (get-distance-of-lists "aoc1-input.txt"))
+(def ans (get-list-simlarity "aoc1-input.txt"))
 
