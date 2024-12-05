@@ -9,3 +9,6 @@
       slurp
       str/trim
       (str/split #"\n")))
+
+(defn to-int [s]
+  (Integer/parseInt s))
