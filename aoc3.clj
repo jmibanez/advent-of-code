@@ -3,17 +3,41 @@
 (require '[util :as u])
 
 (def mul-re #"(mul\((\d+),(\d+)\))")
+(def inst-re #"(don't\(\))|(do\(\))|(mul\((\d+),(\d+)\))")
 
-(defn exec-mul [[instruction _ a b]]
-  (*
-   (u/to-int a)
-   (u/to-int b)))
 
-(defn exec-mul-instructions [text]
-  (let [mul-seqs (re-seq mul-re text)]
-    (reduce +
-            (map exec-mul mul-seqs))))
+(defn clear-mul [state]
+  (assoc state :enabled? false))
 
-(def example "xmul(2,4)%&mul[3,7]!@^do_not_mul(5,5)+mul(32,64]then(mul(11,8)mul(8,5))")
-(= 161 (exec-mul-instructions example))
+(defn enable-mul [state]
+  (assoc state :enabled? true))
+
+(defn yield-mul [a b]
+  (fn [state]
+    (update state :val
+            #(+ %
+                (if (:enabled? state)
+                  (* (u/to-int a)
+                     (u/to-int b))
+                  0)))))
+
+(defn yield-op [[instruction _ _ _ a b]]
+  (cond
+    (= instruction "don't()") clear-mul
+    (= instruction "do()") enable-mul
+    :else (yield-mul a b)))
+
+
+(defn apply-op [state op]
+  (op state))
+
+(defn exec-instructions [text]
+  (let [inst-seqs (re-seq inst-re text)]
+    (:val
+     (reduce apply-op
+             {:enabled? true :val 0}
+             (map yield-op inst-seqs)))))
+
+(def example "xmul(2,4)&mul[3,7]!^don't()_mul(5,5)+mul(32,64](mul(11,8)undo()?mul(8,5))")
+(= 48 (exec-instructions example))
 
