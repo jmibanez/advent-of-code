@@ -51,3 +51,49 @@
   (+ (count-matching-rows grid)
      (count-matching-cols grid)
      (count-matching-diags grid)))
+
+
+(defn get-check-spots-at-cell [grid cell i j]
+  (let [tl (nth (nth grid (- i 1))
+                (- j 1))
+        tr (nth (nth grid (- i 1))
+                (+ j 1))
+        bl (nth (nth grid (+ i 1))
+                (- j 1))
+        br (nth (nth grid (+ i 1))
+                (+ j 1))]
+      [i j tl tr cell bl br]))
+
+(defn cell-is-x-mas-centered? [grid cell i j]
+  (let [[_ _ tl tr _ bl br]
+        (get-check-spots-at-cell grid cell i j)]
+    (and
+     (= \A cell)
+     (or
+      (and
+       (= \M tl)
+       (= \S br))
+      (and
+       (= \S tl)
+       (= \M br)))
+     (or
+      (and
+       (= \M bl)
+       (= \S tr))
+      (and
+       (= \S bl)
+       (= \M tr))))))
+
+(defn search-x-mas [grid]
+  (let [length (count grid)
+        height (count (first grid))]
+    (for [[i row] (map-indexed list grid)
+          [j cell] (map-indexed list row)
+          :when (and (>= i 1)
+                     (>= j 1)
+                     (<= i (- length 2))
+                     (<= j (- height 2)))]
+
+      (cell-is-x-mas-centered? grid cell i j))))
+
+;; (def ans (count (filter true? (search-x-mas (read-grid "aoc4-input.txt")))))
